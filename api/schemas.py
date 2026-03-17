@@ -12,6 +12,8 @@ class EmotionResponse(BaseModel):
     confidence: float
     all_scores: dict[str, float]
     transcript: str
+    is_correct: bool = False
+    creative_feedback: str = ""
     language: str
 
 
@@ -22,6 +24,7 @@ class LessonRequest(BaseModel):
     language: str = "tamil"
     emotion: str = "Confident"
     mastery_level: int = Field(default=3, ge=0, le=10)
+    proficiency_level: str = "Beginner"
 
 
 class LessonResponse(BaseModel):
@@ -36,12 +39,14 @@ class LessonResponse(BaseModel):
 class StudentCreate(BaseModel):
     name: str
     language: str = "tamil"
+    proficiency_level: str = "Beginner"
 
 
 class StudentOut(BaseModel):
     id: int
     name: str
     language: str
+    proficiency_level: str
 
     class Config:
         from_attributes = True

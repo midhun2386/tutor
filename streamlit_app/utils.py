@@ -11,6 +11,8 @@ def init_session_state():
         st.session_state.student_name = ""
     if 'language' not in st.session_state:
         st.session_state.language = "tamil"
+    if 'proficiency_level' not in st.session_state:
+        st.session_state.proficiency_level = "Beginner"
     if 'session_id' not in st.session_state:
         st.session_state.session_id = None
     if 'last_emotion' not in st.session_state:
@@ -19,3 +21,5 @@ def init_session_state():
         st.session_state.current_lesson = None
     if 'quiz_mode' not in st.session_state:
         st.session_state.quiz_mode = False
+    if 'lessons_completed' not in st.session_state:
+        st.session_state.lessons_completed = 0

@@ -45,10 +45,13 @@ def run():
         
         if selected_name != "--":
             s_data = student_names[selected_name]
+            st.info(f"Level: **{s_data.get('proficiency_level', 'Beginner')}**")
+            
             if st.button("Continue to Lessons"):
                 st.session_state.student_id = s_data['id']
                 st.session_state.student_name = s_data['name']
                 st.session_state.language = s_data['language']
+                st.session_state.proficiency_level = s_data.get('proficiency_level', 'Beginner')
                 st.rerun()
 
     st.divider()
@@ -58,11 +61,18 @@ def run():
     with st.form("registration_form", clear_on_submit=True):
         new_name = st.text_input("Name", help="Enter your first name")
         new_lang = st.selectbox("Language", ["tamil", "hindi", "english"])
+        new_level = st.selectbox("Your Level", ["Beginner", "Intermediate", "Expert"], 
+                                help="Beginner: Fundamentals | Intermediate: Conversations | Expert: Mastery")
+        
         submitted = st.form_submit_button("Register & Start")
         
         if submitted:
             if new_name:
-                payload = {"name": new_name, "language": new_lang}
+                payload = {
+                    "name": new_name, 
+                    "language": new_lang,
+                    "proficiency_level": new_level
+                }
                 try:
                     res = requests.post(f"{API_BASE_URL}/student/", json=payload, timeout=10)
                     if res.status_code == 201:
@@ -70,6 +80,7 @@ def run():
                         st.session_state.student_id = s_data['id']
                         st.session_state.student_name = s_data['name']
                         st.session_state.language = s_data['language']
+                        st.session_state.proficiency_level = s_data['proficiency_level']
                         st.success("Registered!")
                         st.rerun()
                     else:

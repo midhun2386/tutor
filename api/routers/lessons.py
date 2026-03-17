@@ -29,11 +29,13 @@ async def generate_lesson(req: LessonRequest, db: Session = Depends(get_db)):
         mastery_level = req.mastery_level  # fallback from request
 
     # Offload heavy LLM generation to a thread pool
+    # run_sync only takes positional args for the function. We use req.proficiency_level as a positional arg.
     lesson = await anyio.to_thread.run_sync(
         llm_engine.generate_lesson,
         req.language,
         req.emotion,
-        mastery_level
+        mastery_level,
+        req.proficiency_level
     )
 
     return LessonResponse(

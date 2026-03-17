@@ -7,6 +7,7 @@ import io
 from config import API_BASE_URL
 from streamlit_app.components.audio_recorder import render_audio_recorder
 from streamlit_app.components.syllable_game import render_syllable_game
+from streamlit_app.components.tts_component import render_voice_demo
 from streamlit_app.utils import init_session_state
 
 def get_new_lesson():
@@ -15,7 +16,8 @@ def get_new_lesson():
     payload = {
         "student_id": st.session_state.student_id,
         "language": st.session_state.language,
-        "emotion": st.session_state.get('last_emotion', 'Confident')
+        "emotion": st.session_state.get('last_emotion', 'Confident'),
+        "proficiency_level": st.session_state.get('proficiency_level', 'Beginner')
     }
     try:
         res = requests.post(f"{API_BASE_URL}/lessons/generate", json=payload, timeout=120)
@@ -24,8 +26,12 @@ def get_new_lesson():
             st.session_state.quiz_mode = False # Start in Teaching mode
             if 'current_build' in st.session_state:
                 st.session_state.current_build = []
+        else:
+            st.error(f"Failed to fetch lesson. Server responded with: {res.status_code}")
+            st.session_state.current_lesson = None
     except Exception as e:
-        st.error(f"Could not fetch lesson: {e}")
+        st.error(f"Could not connect to tutor backend: {e}")
+        st.session_state.current_lesson = None
 
 def run():
     init_session_state()
@@ -49,7 +55,10 @@ def run():
 
     lesson = st.session_state.get('current_lesson')
     if not lesson:
-        st.error("No lesson content available.")
+        st.error("📉 No lesson content found. This might happen if the backend is still starting up.")
+        if st.button("🔄 Retry Fetching Lesson"):
+            get_new_lesson()
+            st.rerun()
         return
 
     # ── Render Lesson UI ──────────────────────────────────────────────────────
@@ -62,6 +71,9 @@ def run():
         """,
         unsafe_allow_html=True
     )
+    
+    # Render the Voice Demo button below the text but inside the card-area
+    render_voice_demo(lesson['lesson_text'], st.session_state.language)
 
     # ── Action Area ────────────────────────────────────────────────────────────
     
@@ -74,7 +86,11 @@ def run():
         
         if audio_bytes:
             files = {'file': ('audio.wav', audio_bytes, 'audio/wav')}
-            data = {'language': st.session_state.language, 'session_id': st.session_state.session_id}
+            data = {
+                'language': st.session_state.language, 
+                'session_id': st.session_state.session_id,
+                'expected_text': lesson['lesson_text']
+            }
             
             with st.spinner("Analyzing your voice..."):
                 try:
@@ -92,20 +108,43 @@ def run():
                             if st.button("Skip to Quiz 🧩"):
                                 st.session_state.quiz_mode = True
                                 st.rerun()
+
+                        # ── ALWAYS Display Analysis Results ───────────────────────
+
+                        if analysis.get('is_correct'):
+                            st.balloons()
+                            st.markdown("*✨ A sprinkle of digital stardust accompanies your choice! ✨*")
                         else:
-                            st.success(f"I heard: **{analysis['transcript']}**")
-                            st.write(f"Detected Emotion: **{analysis['emotion_label']}** ({analysis['confidence']:.2%})")
-                            
-                            # Determine if reading was successful enough (simple heuristic)
-                            if analysis['emotion_label'] in ['Confident', 'Hesitant']:
-                                if st.button("Great! Now Start Quiz 🧩"):
-                                    st.session_state.quiz_mode = True
-                                    st.rerun()
-                            else:
-                                st.warning("You seem a bit frustrated. Let's try an easier lesson first?")
-                                if st.button("Try Another Lesson"):
-                                    get_new_lesson()
-                                    st.rerun()
+                            st.markdown("*💡 Your selection has been highlighted with a vibrant, shimmering outline, ready for action! 💡*")
+
+                        # Automatically speak the feedback
+                        render_voice_demo(
+                            analysis['creative_feedback'], 
+                            st.session_state.language, 
+                            autoplay=True,
+                            label="🎧 Hear Veena's Feedback"
+                        )
+
+                        st.write(f"I heard: **{analysis['transcript']}**")
+                        st.caption(f"Detected Emotion: **{analysis['emotion_label']}** ({analysis['confidence']:.1%})")
+                        
+                        # Progress Tracker
+                        completed = st.session_state.get('lessons_completed', 0)
+                        st.progress(min(completed / 3.0, 1.0), text=f"Progress: {completed}/3 lessons before Quiz!")
+
+                        # ── Navigation Logic ──────────────────────────────────────
+                        if completed >= 3:
+                            if st.button("Great! Now Start Quiz 🧩"):
+                                st.markdown("*🚀 ✨ Magic portal opening... preparing your challenge!*")
+                                st.session_state.quiz_mode = True
+                                st.rerun()
+                        else:
+                            if st.button("Get Next Practice Lesson ➡️"):
+                                st.markdown("*✨ Transforming the lesson layout with a magical shimmer... ✨*")
+                                # Increment lessons completed ONLY when clicking Next
+                                st.session_state.lessons_completed = min(st.session_state.get('lessons_completed', 0) + 1, 3)
+                                get_new_lesson()
+                                st.rerun()
                     else:
                         st.error("Analysis failed.")
                 except Exception as e:
@@ -120,10 +159,12 @@ def run():
         st.info("Now, build the word by clicking the syllables in the correct order!")
         
         # We always use the syllables from the current lesson
-        if render_syllable_game(lesson['lesson_text'], lesson.get('syllables', [])):
+        # CORRECTION: Fixed argument order (syllables, text)
+        if render_syllable_game(lesson.get('syllables', []), lesson['lesson_text']):
             st.balloons()
             if st.button("Complete Lesson & Get Next ➡️"):
                 st.session_state.last_emotion = "Confident"
+                st.session_state.lessons_completed = 0 # Reset for next cycle
                 get_new_lesson()
                 st.rerun()
         

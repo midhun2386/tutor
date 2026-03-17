@@ -25,7 +25,7 @@ EMOTION_MODEL: str = os.getenv(
     "EMOTION_MODEL",
     "ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition",
 )
-LLM_MODEL: str = os.getenv("LLM_MODEL", "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+LLM_MODEL: str = os.getenv("LLM_MODEL", "meta-llama/Llama-3.2-1B-Instruct")
 HF_TOKEN: str | None = os.getenv("HF_TOKEN", None)
 
 # ─── Feature Flags ────────────────────────────────────────────────────────────

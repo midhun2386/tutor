@@ -1,7 +1,55 @@
-"""
-Emotion Responder - Maps emotional states to specific pedagogical protocols.
-Provides the 'voice' and 'behavior' of the tutor during stress or success.
-"""
+import random
+
+_CREATIVE_FEEDBACK = {
+    "correct": {
+        "tamil": [
+            "அற்புதம்! மிகச் சரியாகச் சொன்னீர்கள்! 🌟",
+            "அருமை! உங்கள் உச்சரிப்பு மிகத் தெளிவாக உள்ளது. 👏",
+            "வாழ்த்துக்கள்! நீங்கள் மிக வேகமாக கற்றுக் கொள்கிறீர்கள். 🚀",
+            "சிறப்பு! இதே வேகத்தில் தொடருவோம்! ✨"
+        ],
+        "hindi": [
+            "अद्भुत! आपने बिल्कुल सही कहा! 🌟",
+            "बहुत बढ़िया! आपका उच्चारण बहुत स्पष्ट है। 👏",
+            "बधाई हो! आप बहुत तेजी से सीख रहे हैं। 🚀",
+            "शानदार! इसी तरह जारी रखें! ✨"
+        ],
+        "english": [
+            "Amazing! You said that perfectly! 🌟",
+            "Great job! Your pronunciation is very clear. 👏",
+            "Congratulations! You're learning so fast. 🚀",
+            "Excellent! Let's keep this momentum going! ✨"
+        ]
+    },
+    "incorrect": {
+        "tamil": [
+            "கிட்டத்தட்ட நெருங்கிவிட்டீர்கள்! மீண்டும் ஒருமுறை முயற்சிப்போம். 💪",
+            "பரவாயில்லை, முயற்சி செய்வதுதான் முக்கியம். மீண்டும் சொல்லுங்கள். 😊",
+            "மெதுவாக முயற்சி செய்யுங்கள், உங்களால் முடியும்! 💡",
+            "குறைந்தபட்சம் நீங்கள் முயற்சி செய்தீர்கள், அதுவே பெரிய விஷயம்! 🌈"
+        ],
+        "hindi": [
+            "लगभग पहुँच गए! एक बार फिर कोशिश करते हैं। 💪",
+            "कोई बात नहीं, कोशिश करना महत्वपूर्ण है। फिर से कहें। 😊",
+            "धीरे-धीरे कोशिश करें, आप कर सकते हैं! 💡",
+            "कम से कम आपने कोशिश की, यही बड़ी बात है! 🌈"
+        ],
+        "english": [
+            "Almost there! Let's try it one more time. 💪",
+            "It's okay, trying is what matters. Say it again. 😊",
+            "Take it slow, I know you can do it! 💡",
+            "At least you gave it a shot, that's the spirit! 🌈"
+        ]
+    }
+}
+
+def get_creative_feedback(language: str = "english", is_correct: bool = True) -> str:
+    """Returns a random creative feedback string in the target language."""
+    category = "correct" if is_correct else "incorrect"
+    lang_key = language.lower() if language.lower() in ["tamil", "hindi"] else "english"
+    
+    options = _CREATIVE_FEEDBACK[category].get(lang_key, _CREATIVE_FEEDBACK[category]["english"])
+    return random.choice(options)
 
 def get_emotional_response(emotion: str, language: str = "tamil") -> dict:
     """

@@ -19,7 +19,7 @@ router = APIRouter(prefix="/student", tags=["Student"])
 
 @router.post("/", response_model=StudentOut, status_code=201)
 def create_student(body: StudentCreate, db: Session = Depends(get_db)):
-    student = crud.create_student(db, name=body.name, language=body.language)
+    student = crud.create_student(db, name=body.name, language=body.language, proficiency_level=body.proficiency_level)
     return student
 
 
@@ -38,6 +38,7 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
         id=student.id,
         name=student.name,
         language=student.language,
+        proficiency_level=student.proficiency_level,
         phoneme_progress=[
             PhonemeProgressOut(
                 phoneme=p.phoneme,

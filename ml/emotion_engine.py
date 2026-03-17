@@ -89,13 +89,33 @@ class EmotionEngine:
 
         # ── Mock mode ────────────────────────────────────────────────────────
         if config.USE_MOCK_MODELS or self._pipeline is None:
-            # Default to Confident during mock/warmup to avoid de-escalation loops
-            label = "Confident"
-            conf = 0.99
-            all_scores = {l: 0.01 for l in config.EMOTION_LABELS}
+            # During warmup/mock, vary between positive states to feel "alive" 
+            # without triggering de-escalation loops.
+            choices = ["Confident", "Hesitant"]
+            weights = [0.85, 0.15] # 85% Confident, 15% Hesitant
+            label = random.choices(choices, weights=weights)[0]
+            
+            conf = 0.90 + (random.random() * 0.08) # 90-98%
+            all_scores = {l: (1.0 - conf) / (len(config.EMOTION_LABELS)-1) for l in config.EMOTION_LABELS}
             all_scores[label] = conf
             return EmotionResult(label=label, confidence=conf, all_scores=all_scores)
 
+        # ── Energy Check ──────────────────────────────────────────────────────
+        rms = np.sqrt(np.mean(waveform**2))
+        if rms < 0.01:  # Very quiet or silence
+            logger.info("EmotionEngine: Audio too quiet. Defaulting to 'Hesitant'.")
+            label = "Hesitant"
+            all_scores = {l: 0.05 for l in config.EMOTION_LABELS}
+            all_scores[label] = 0.85
+            return EmotionResult(label=label, confidence=0.85, all_scores=all_scores)
+
+        # ── Energy-Based Biasing ─────────────────────────────────────────────
+        # rms is already calculated above in the 'Energy Check' section
+        # We define thresholds for 'Loud' (Confident) and 'Soft' (Hesitant)
+        # These are calibrated for normalized web-audio (0.0 to 1.0)
+        is_loud = rms > 0.08
+        is_soft = rms < 0.03
+        
         # ── Real inference ────────────────────────────────────────────────────
         # The HF audio-classification pipeline accepts {"array": ..., "sampling_rate": ...}
         inputs = {"array": waveform.astype(np.float32), "sampling_rate": sample_rate}
@@ -109,6 +129,14 @@ class EmotionEngine:
         for raw_label, score in raw_scores.items():
             mapped = _RAW_TO_PEDAGOGY.get(raw_label, "Hesitant")
             pedagogy_scores[mapped] += score
+
+        # Apply Energy Bias
+        if is_loud:
+            logger.info(f"EmotionEngine: High energy detected ({rms:.3f}). Biasing towards Confident.")
+            pedagogy_scores["Confident"] += 0.3 # Boost confidence
+        elif is_soft:
+            logger.info(f"EmotionEngine: Low energy detected ({rms:.3f}). Biasing towards Hesitant.")
+            pedagogy_scores["Hesitant"] += 0.3 # Boost hesitancy
 
         # Normalise
         total = sum(pedagogy_scores.values()) or 1.0

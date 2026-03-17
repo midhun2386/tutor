@@ -17,6 +17,7 @@ class Student(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(120), nullable=False)
     language = Column(String(40), default="tamil")
+    proficiency_level = Column(String(20), default="Beginner") # Beginner, Intermediate, Expert
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     sessions = relationship("SessionLog", back_populates="student", cascade="all, delete")

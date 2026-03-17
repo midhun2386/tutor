@@ -9,8 +9,8 @@ from pedagogy.student_model import update_mastery_probability
 
 # ─── Student ──────────────────────────────────────────────────────────────────
 
-def create_student(db: Session, name: str, language: str = "tamil") -> models.Student:
-    student = models.Student(name=name, language=language)
+def create_student(db: Session, name: str, language: str = "tamil", proficiency_level: str = "Beginner") -> models.Student:
+    student = models.Student(name=name, language=language, proficiency_level=proficiency_level)
     db.add(student)
     db.commit()
     db.refresh(student)

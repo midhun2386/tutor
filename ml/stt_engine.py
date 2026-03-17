@@ -49,7 +49,7 @@ class STTEngine:
         """Pre-load the model."""
         self._load()
 
-    def transcribe(self, audio_bytes: bytes, language_hint: str = "ta") -> TranscriptResult:
+    def transcribe(self, audio_bytes: bytes, language_hint: str = "ta", prompt: str = "") -> TranscriptResult:
         """
         Transcribe raw audio bytes.
 
@@ -57,6 +57,7 @@ class STTEngine:
         ----------
         audio_bytes   : WAV or any audio file bytes
         language_hint : ISO-639-1 code ("ta"=Tamil, "hi"=Hindi, "en"=English)
+        prompt        : Optional text to bias the transcription (initial_prompt)
 
         Returns
         -------
@@ -87,6 +88,8 @@ class STTEngine:
                 language=language_hint,
                 task="transcribe",
                 word_timestamps=True,
+                initial_prompt=prompt,
+                temperature=0.0, # More deterministic, less hallucination
             )
         finally:
             # On Windows, deletion might fail if process still holds a handle
@@ -125,7 +128,7 @@ def warmup():
     """Warm up the STT engine."""
     _engine.warmup()
 
-def transcribe(audio_bytes: bytes, language: str = "tamil") -> TranscriptResult:
+def transcribe(audio_bytes: bytes, language: str = "tamil", prompt: str = "") -> TranscriptResult:
     """Convenience wrapper; accepts full language name or ISO code."""
     lang_code = LANG_CODE_MAP.get(language.lower(), language)
-    return _engine.transcribe(audio_bytes, lang_code)
+    return _engine.transcribe(audio_bytes, lang_code, prompt)
