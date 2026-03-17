@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Database
+tutor.db
+*.sqlite3
+
+# Streamlit
+.streamlit/
+
+# ML models / Large files
+*.bin
+*.model
+*.h5
+*.joblib
+*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project temporary scripts
+validate_project.py
+test_models.py
+check_syntax.py
+find_awaits.py
