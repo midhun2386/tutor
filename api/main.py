@@ -28,9 +28,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.staticfiles import StaticFiles
+
 app.include_router(audio.router)
 app.include_router(lessons.router)
 app.include_router(student.router)
+
+# Serve the 3D Landing Page at root
+app.mount("/", StaticFiles(directory="web", html=True), name="static")
+
 
 def warmup_models():
     global MODELS_READY
@@ -51,14 +57,10 @@ def on_startup():
     # Start warmup in a separate thread so the server can start immediately
     threading.Thread(target=warmup_models, daemon=True).start()
 
-@app.get("/health", tags=["Health"])
+@app.get("/api/health", tags=["Health"])
 def health():
     return {
         "status": "ok" if MODELS_READY else "loading",
         "service": "Vernacular AI Literacy Tutor API",
         "models_ready": MODELS_READY
     }
-
-@app.get("/", tags=["Health"])
-def root():
-    return {"message": "Vernacular AI Tutor API is running"}

@@ -30,12 +30,12 @@ def kill_port_owner(port):
     return False
 
 def run():
-    print("🚀 Starting Vernacular AI Tutor...")
+    print("🚀 Starting Vernacular AI Tutor (Web Version)...")
     
     # Self-healing: Clear port 8000 before starting
     kill_port_owner(8000)
 
-    # 1. Start FastAPI in the background
+    # 1. Start FastAPI in the background (Serving Web + API)
     api_cmd = [
         sys.executable, "-m", "uvicorn", 
         "api.main:app", 
@@ -43,12 +43,6 @@ def run():
         "--port", "8000"
     ]
     
-    # 2. Start Streamlit
-    streamlit_cmd = [
-        sys.executable, "-m", "streamlit", "run", 
-        os.path.join("streamlit_app", "app.py")
-    ]
-
     try:
         # Launch API
         api_proc = subprocess.Popen(
@@ -58,15 +52,14 @@ def run():
             text=True,
             bufsize=1
         )
-        print("✅ FastAPI Backend process started.")
+        print("✅ Backend & Web Server started.")
         
         # Proactive wait for Backend
-        print("⏳ Waiting for backend to open port 8000...")
+        print("⏳ Waiting for server to open port 8000...")
         max_retries = 30
         backend_ready = False
         backend_output = []
         
-        # Monitor output in a background thread
         import threading
         def collect_output(proc, output_list):
             try:
@@ -82,45 +75,32 @@ def run():
             if api_proc.poll() is not None:
                 break
             try:
-                requests.get("http://127.0.0.1:8000/health", timeout=1)
+                requests.get("http://127.0.0.1:8000/api/health", timeout=1)
                 backend_ready = True
-                print("✅ Backend is ready!")
+                print("\n" + "="*50)
+                print("🌟 VERNACULAR AI TUTOR IS LIVE! 🌟")
+                print("👉 URL: http://127.0.0.1:8000")
+                print("="*50 + "\n")
                 break
             except:
                 time.sleep(1)
         
         if not backend_ready:
             if api_proc.poll() is not None:
-                print("❌ Backend crashed immediately with status:", api_proc.returncode)
-                print("--- BACKEND ERROR LOG ---")
+                print("❌ Server crashed immediately. Status:", api_proc.returncode)
                 print("\n".join(backend_output[-20:]))
-                print("-------------------------")
                 sys.exit(1)
-            else:
-                print("⚠️ Backend taking too long. Starting UI anyway...")
         
-        # Launch Streamlit
-        st_proc = subprocess.Popen(streamlit_cmd)
-        print("✅ Streamlit Frontend process started.")
-
         # Keep alive
         while True:
             if api_proc.poll() is not None:
-                print("❌ Backend crashed. Shutting down...")
-                print("--- FINAL BACKEND LOG ---")
-                print("\n".join(backend_output[-20:]))
-                st_proc.terminate()
-                break
-            if st_proc.poll() is not None:
-                print("❌ Frontend closed. Shutting down...")
-                api_proc.terminate()
+                print("❌ Server crashed. Shutting down...")
                 break
             time.sleep(1)
 
     except KeyboardInterrupt:
-        print("\n🛑 Shutting down Vernacular...")
+        print("\n🛑 Shutting down...")
         api_proc.terminate()
-        st_proc.terminate()
         sys.exit(0)
     except Exception as e:
         print(f"❌ Error in runner: {e}")
