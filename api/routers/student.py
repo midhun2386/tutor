@@ -51,6 +51,14 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
     )
 
 
+@router.delete("/{student_id}", status_code=204)
+def delete_student(student_id: int, db: Session = Depends(get_db)):
+    success = crud.delete_student(db, student_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return None
+
+
 # ─── Phoneme Progress ─────────────────────────────────────────────────────────
 
 @router.post("/{student_id}/progress", response_model=PhonemeProgressOut)

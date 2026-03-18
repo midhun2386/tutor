@@ -22,6 +22,8 @@ async def generate_lesson(req: LessonRequest, db: Session = Depends(get_db)):
     """
     # Compute average mastery across all phonemes for this student
     progress_records = crud.get_phoneme_progress(db, req.student_id)
+    mastered_phonemes = [r.phoneme for r in progress_records if r.mastery_score > 0.8]
+    
     if progress_records:
         avg_mastery = sum(r.mastery_score for r in progress_records) / len(progress_records)
         mastery_level = int(avg_mastery * 10)  # scale to 0-10
@@ -35,7 +37,9 @@ async def generate_lesson(req: LessonRequest, db: Session = Depends(get_db)):
         req.language,
         req.emotion,
         mastery_level,
-        req.proficiency_level
+        req.proficiency_level,
+        req.excluded_texts,
+        mastered_phonemes
     )
 
     return LessonResponse(
@@ -43,4 +47,6 @@ async def generate_lesson(req: LessonRequest, db: Session = Depends(get_db)):
         hint=lesson.hint,
         exercise_type=lesson.exercise_type,
         syllables=lesson.syllables,
+        target_word=lesson.target_word,
+        phoneme=lesson.phoneme
     )

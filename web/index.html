@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVA AI | Your Personal Language Tutor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">AVA AI</div>
+        <nav>
+            <button class="nav-btn active" data-view="home">🏠 Home</button>
+            <button class="nav-btn" data-view="lesson" id="nav-lesson" disabled>📖 Lesson</button>
+            <button class="nav-btn" data-view="progress" id="nav-progress" disabled>📊 Progress</button>
+        </nav>
+        <div class="session-info" id="session-info">
+            <p>Not Logged In</p>
+        </div>
+    </aside>
+
+    <main id="app-container">
+        <!-- Home View -->
+        <section id="view-home" class="view active">
+            <div class="glass-card">
+                <h1>Who is learning today?</h1>
+                <div id="profile-selection">
+                    <select id="student-select" class="modern-select">
+                        <option value="">-- Select Profile --</option>
+                    </select>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-continue" class="cta-button" style="flex: 1;" disabled>Continue to Lessons</button>
+                        <button id="btn-delete-profile" class="cta-button hidden" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5;">🗑️ Delete</button>
+                    </div>
+                </div>
+                <hr>
+                <h2>New Learner?</h2>
+                <form id="registration-form" class="modern-form">
+                    <input type="text" id="reg-name" placeholder="Enter Your Name" required>
+                    <select id="reg-lang">
+                        <option value="tamil">Tamil</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="english">English</option>
+                    </select>
+                    <select id="reg-level">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Expert">Expert</option>
+                    </select>
+                    <button type="submit" class="cta-button">Register & Start</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Lesson View -->
+        <section id="view-lesson" class="view">
+            <div class="glass-card cinematic-container">
+                <div id="lesson-content">
+                    <h2 id="lesson-text" class="glowing-text">Loading Lesson...</h2>
+                    <p id="lesson-hint" class="hint-text"><i>Hint: ...</i></p>
+                </div>
+                <div class="controls">
+                    <div class="ava-voice-trigger">
+                        <button id="btn-speak" class="premium-voice-btn">
+                            <span class="pulse-ring"></span>
+                            <span class="btn-content">🎧 Hear AVA</span>
+                        </button>
+                    </div>
+                    <div id="audio-visualizer"></div>
+                    <button id="btn-record" class="cta-button">🎙️ Start Recording</button>
+                </div>
+                <div id="analysis-results" class="results-panel hidden">
+                    <p id="transcript-text"></p>
+                    <p id="emotion-label"></p>
+                    <div id="progress-bar-container">
+                        <div id="progress-bar-fill"></div>
+                        <span id="progress-text">0/3 Lessons Completed</span>
+                    </div>
+                    <button id="btn-next-lesson" class="cta-button hidden">Next Lesson ➡️</button>
+                    <button id="btn-start-quiz" class="cta-button hidden">Start Quiz 🧩</button>
+                </div>
+            </div>
+            
+            <div id="quiz-container" class="glass-card hidden">
+                <h3>🧩 Syllable Quiz</h3>
+                <div id="game-mount"></div>
+            </div>
+        </section>
+
+        <!-- Progress View -->
+        <section id="view-progress" class="view">
+            <div class="glass-card">
+                <h2>Your Journey</h2>
+                <div id="progress-grid">
+                    <!-- Stats will be injected here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="notification-area"></div>
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.154.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="app.js?v=2"></script>
+</body>
+</html>

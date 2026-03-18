@@ -12,7 +12,8 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 
 # ─── Database ─────────────────────────────────────────────────────────────────
-DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'tutor.db'}")
+# Connect to PostgreSQL by default for production-grade reliability
+DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:data%20wizards@localhost:5432/tutor_db")
 
 # ─── API ──────────────────────────────────────────────────────────────────────
 API_BASE_URL: str = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
@@ -25,7 +26,8 @@ EMOTION_MODEL: str = os.getenv(
     "EMOTION_MODEL",
     "ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition",
 )
-LLM_MODEL: str = os.getenv("LLM_MODEL", "meta-llama/Llama-3.2-1B-Instruct")
+LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY", None)
 HF_TOKEN: str | None = os.getenv("HF_TOKEN", None)
 
 # ─── Feature Flags ────────────────────────────────────────────────────────────

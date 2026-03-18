@@ -25,6 +25,16 @@ def get_all_students(db: Session) -> list[models.Student]:
     return db.query(models.Student).all()
 
 
+def delete_student(db: Session, student_id: int) -> bool:
+    """Delete a student and all associated records (cascade)."""
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+    if student:
+        db.delete(student)
+        db.commit()
+        return True
+    return False
+
+
 # ─── Session ──────────────────────────────────────────────────────────────────
 
 def start_session(db: Session, student_id: int) -> models.SessionLog:
@@ -83,7 +93,13 @@ def upsert_phoneme_progress(
         .first()
     )
     if record is None:
-        record = models.PhonemeProgress(student_id=student_id, phoneme=phoneme)
+        record = models.PhonemeProgress(
+            student_id=student_id, 
+            phoneme=phoneme,
+            attempt_count=0,
+            error_count=0,
+            mastery_score=0.0
+        )
         db.add(record)
 
     record.attempt_count += 1

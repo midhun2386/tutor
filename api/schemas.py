@@ -25,6 +25,7 @@ class LessonRequest(BaseModel):
     emotion: str = "Confident"
     mastery_level: int = Field(default=3, ge=0, le=10)
     proficiency_level: str = "Beginner"
+    excluded_texts: list[str] = []
 
 
 class LessonResponse(BaseModel):
@@ -32,6 +33,8 @@ class LessonResponse(BaseModel):
     hint: str
     exercise_type: str
     syllables: list[str] = []
+    target_word: str = ""
+    phoneme: str = ""
 
 
 # ─── Student ──────────────────────────────────────────────────────────────────

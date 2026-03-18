@@ -5,6 +5,12 @@ Includes a self-healing mechanism to clear common Windows port conflicts.
 import subprocess
 import os
 import sys
+import io
+
+# Force UTF-8 encoding for standard output to support emojis in Windows terminals
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 import time
 import requests
 import re
